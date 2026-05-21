@@ -20,60 +20,10 @@
  */
 
 import { bech32 } from '@scure/base'
-import * as bolt11 from 'bolt11'
 import { stripLightningPrefix } from './utils.js'
 
 /** Lightning address: strict email (user@domain.tld). */
 const LIGHTNING_ADDRESS_EMAIL_REGEX = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-
-/**
- * @typedef {object} DecodedLightningInvoice
- * @property {string} [paymentRequest]
- * @property {boolean} [complete]
- * @property {string} [prefix]
- * @property {string} [wordsTemp]
- * @property {object} [network]
- * @property {number | null} [satoshis]
- * @property {string | null} [millisatoshis]
- * @property {number} [timestamp]
- * @property {string} [timestampString]
- * @property {number} [timeExpireDate]
- * @property {string} [timeExpireDateString]
- * @property {string} [payeeNodeKey]
- * @property {string} [signature]
- * @property {number} [recoveryFlag]
- * @property {Array<{tagName: string, data: string | number | object}>} tags
- */
-
-/**
- * @typedef {{ success: true, type: 'invoice', data: DecodedLightningInvoice }} LightningInvoiceDecodingSuccess
- * @typedef {{ success: false, reason: string }} LightningInvoiceDecodingFailure
- * @typedef {LightningInvoiceDecodingSuccess | LightningInvoiceDecodingFailure} LightningInvoiceDecodingResult
- */
-
-/**
- * Decodes a BOLT11 Lightning Network invoice.
- *
- * @param {string} invoice The BOLT11 invoice string to decode.
- * @returns {LightningInvoiceDecodingResult}
- */
-export function decodeLightningInvoice (invoice) {
-  if (invoice == null || typeof invoice !== 'string') {
-    return { success: false, reason: 'INVALID_FORMAT' }
-  }
-
-  const trimmed = stripLightningPrefix(invoice)
-  if (trimmed.length === 0) {
-    return { success: false, reason: 'EMPTY_INVOICE' }
-  }
-
-  try {
-    const decoded = bolt11.decode(trimmed)
-    return { success: true, type: 'invoice', data: decoded }
-  } catch (e) {
-    return { success: false, reason: 'DECODING_FAILED' }
-  }
-}
 
 /**
  * @typedef {{ success: true, type: 'lnurl' }} LnurlValidationSuccess
