@@ -410,6 +410,10 @@ function encodeTag (tagName, data) {
       throw new Error('INVALID_TAG_LENGTH')
     }
 
+    if (words.length >= 1024) {
+      throw new Error('TAG_DATA_TOO_LONG')
+    }
+
     const tagWords = new Uint8Array(3 + words.length)
     tagWords[0] = tagDef.code
     tagWords[1] = words.length >> 5
@@ -449,6 +453,7 @@ export function validateInvoiceData (invoiceData) {
 
   if (invoiceData.millisatoshis) {
     const msats = BigInt(invoiceData.millisatoshis)
+    if (msats <= 0n) throw new Error('INVALID_AMOUNT')
     if (msats > MAX_MILLISATS) throw new Error('AMOUNT_TOO_LARGE')
   }
 

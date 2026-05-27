@@ -187,6 +187,18 @@ describe('BOLT11 Tests', () => {
       expect(result.reason).toBe('AMOUNT_TOO_LARGE')
     })
 
+    it('should fail when amount is zero or negative', () => {
+      const zeroData = { ...MOCK_SUCCESS_DATA[0].data, millisatoshis: '0' }
+      const zeroResult = encode(zeroData)
+      expect(zeroResult.success).toBe(false)
+      expect(zeroResult.reason).toBe('INVALID_AMOUNT')
+
+      const negativeData = { ...MOCK_SUCCESS_DATA[0].data, millisatoshis: '-100' }
+      const negativeResult = encode(negativeData)
+      expect(negativeResult.success).toBe(false)
+      expect(negativeResult.reason).toBe('INVALID_AMOUNT')
+    })
+
     it('should fail when timestamp is too large', () => {
       const largeTimestamp = Number(2n ** 35n + 1n)
       const invalidData = { ...MOCK_SUCCESS_DATA[0].data, timestamp: largeTimestamp }
@@ -224,6 +236,20 @@ describe('BOLT11 Tests', () => {
       const result = decode(corrupted)
       // It might fail checksum or pubkey mismatch
       expect(result.success).toBe(false)
+    })
+
+    it('should fail when tag data length exceeds 1024 words', () => {
+      const longDescription = 'a'.repeat(640) // 640 bytes = 5120 bits. In 5-bit words: 5120 / 5 = 1024 words
+      const invalidData = {
+        ...MOCK_SUCCESS_DATA[0].data,
+        tags: [
+          { tagName: 'payment_hash', data: '00'.repeat(32) },
+          { tagName: 'description', data: longDescription }
+        ]
+      }
+      const result = sign(invalidData, MOCK_PRIVATE_KEY)
+      expect(result.success).toBe(false)
+      expect(result.reason).toContain('TAG_DATA_TOO_LONG')
     })
   })
 })
