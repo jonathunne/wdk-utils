@@ -16,12 +16,6 @@ export function validateLightningInvoice(address: string): LightningInvoiceValid
  */
 export function decode(invoice: string): LightningInvoiceDecodingResult;
 /**
- * Validates the structure and mandatory fields of a BOLT11 invoice object.
- * @param {DecodedLightningInvoice} invoiceData
- * @throws {Error} If validation fails
- */
-export function validateInvoiceData(invoiceData: DecodedLightningInvoice): void;
-/**
  * Returns the SHA-256 hash that needs to be signed for an invoice.
  * @param {DecodedLightningInvoice} invoiceData
  * @returns {LightningInvoiceHashingResult}

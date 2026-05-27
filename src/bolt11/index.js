@@ -215,13 +215,13 @@ function parseHrp (hrp) {
   const value = BigInt(match[1])
   const multiplier = match[2]
 
-  if (multiplier === 'p' && value % 10n !== 0n) throw new Error('Amount too small')
+  if (multiplier === 'p' && value % 10n !== 0n) throw new Error('AMOUNT_TOO_SMALL')
 
   const millisatoshis = multiplier
     ? (value * 10n ** 11n) / MULTIPLIER[multiplier]
     : value * 10n ** 11n
 
-  if (millisatoshis > MAX_MILLISATS) throw new Error('Amount too large')
+  if (millisatoshis > MAX_MILLISATS) throw new Error('AMOUNT_TOO_LARGE')
 
   return {
     network,
@@ -431,7 +431,7 @@ function encodeTag (tagName, data) {
  * @param {DecodedLightningInvoice} invoiceData
  * @throws {Error} If validation fails
  */
-export function validateInvoiceData (invoiceData) {
+function validateInvoiceData (invoiceData) {
   if (!invoiceData.network) throw new Error('NETWORK_REQUIRED')
   if (!VALID_PREFIXES.some(p => p.network === invoiceData.network)) throw new Error('INVALID_NETWORK')
 
