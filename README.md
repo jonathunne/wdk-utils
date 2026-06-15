@@ -1,6 +1,6 @@
 # @tetherto/wdk-utils
 
-A collection of utilities for validating cryptocurrency addresses. This package provides a set of functions to validate various address formats from different blockchain networks.
+A collection of utilities for WDK wallet apps, including cryptocurrency address validation and passphrase-protected seed encryption.
 
 ## 🔍 About WDK
 
@@ -15,6 +15,7 @@ For detailed documentation about the complete WDK ecosystem, visit [docs.wallet.
 - **Lightning Network Validation**: Validates Lightning invoices and Lightning addresses.
 - **Spark Address Validation**: Supports Spark address formats.
 - **UMA Address Validation**: Validates Universal Money Addresses.
+- **Seed Encryption**: Encrypts and decrypts seed phrases with AES-256-GCM and scrypt key derivation.
 
 ## ⬇️ Installation
 
@@ -26,7 +27,7 @@ npm install @tetherto/wdk-utils
 
 ## 🚀 Quick Start
 
-### Importing validation functions
+### Importing functions
 
 ```javascript
 import {
@@ -35,7 +36,9 @@ import {
   validateLightningInvoice,
   validateLightningAddress,
   validateSparkAddress,
-  validateUmaAddress
+  validateUmaAddress,
+  encrypt,
+  decrypt
 } from '@tetherto/wdk-utils';
 ```
 
@@ -65,6 +68,10 @@ console.log('Spark validation result:', sparkResult);
 // UMA Address Validation
 const umaResult = validateUmaAddress('$user@domain.com');
 console.log('UMA validation result:', umaResult);
+
+// Seed Encryption
+const payload = encrypt(seedPhrase, passphrase);
+const decrypted = decrypt(payload, passphrase);
 ```
 
 ## 📚 API Reference
@@ -99,6 +106,23 @@ Resolves a UMA username to its components.
 
 ### `stripLightningPrefix(input: string)`
 Strips the "lightning:" prefix from a string.
+- **Returns**: `string`
+
+### `encrypt(plaintext: string, password: string)`
+Encrypts a string with AES-256-GCM using a scrypt-derived key.
+- **Returns**: `{ version: 1, salt: string, iv: string, tag: string, ciphertext: string }` (hex-encoded fields)
+
+### `decrypt(payload: EncryptedPayload, password: string)`
+Decrypts an encrypted payload using a passphrase.
+- **Returns**: `string`
+- **Throws**: If the password is wrong or the payload was tampered with.
+
+### `deriveKey(password: string, salt: Buffer)`
+Derives a 32-byte AES key from a passphrase and salt using scrypt.
+- **Returns**: `Buffer`
+
+### `decryptWithKey(payload: EncryptedPayload, key: Buffer)`
+Decrypts an encrypted payload using a pre-derived key.
 - **Returns**: `string`
 
 ## 🛠️ Development
