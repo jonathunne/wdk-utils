@@ -1,10 +1,6 @@
 # @tetherto/wdk-utils
 
-<<<<<<< HEAD
-A collection of utilities for WDK wallet apps, including cryptocurrency address validation and passphrase-protected seed encryption.
-=======
-A collection of utilities for validating cryptocurrency addresses and payment URIs. This package provides a set of functions to validate various address formats and parse payment requests from different blockchain networks.
->>>>>>> 5b5a039c24645009a5f817a18f2b990a24037ef3
+A collection of utilities for validating cryptocurrency addresses, passphrase-protected seed encryption, and payment URIs. This package provides a set of functions to validate various address formats and parse payment requests from different blockchain networks.
 
 ## 🔍 About WDK
 
@@ -47,15 +43,10 @@ import {
   validateLightningInvoice,
   validateLightningAddress,
   validateSparkAddress,
-<<<<<<< HEAD
   validateUmaAddress,
   encrypt,
   decrypt
 } from '@tetherto/wdk-utils';
-=======
-  validateUmaAddress
-} from '@tetherto/wdk-utils'
->>>>>>> 5b5a039c24645009a5f817a18f2b990a24037ef3
 ```
 
 ### Usage Examples
