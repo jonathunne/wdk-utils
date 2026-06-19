@@ -1,6 +1,6 @@
 # @tetherto/wdk-utils
 
-A collection of utilities for validating cryptocurrency addresses and payment URIs. This package provides a set of functions to validate various address formats and parse payment requests from different blockchain networks.
+A collection of utilities for validating cryptocurrency addresses, passphrase-protected seed encryption, and payment URIs. This package provides a set of functions to validate various address formats and parse payment requests from different blockchain networks.
 
 ## 🔍 About WDK
 
@@ -17,6 +17,7 @@ For detailed documentation about the complete WDK ecosystem, visit [docs.wallet.
 - **Lightning Network Validation**: Validates Lightning invoices and Lightning addresses.
 - **Spark Address Validation**: Supports Spark address formats.
 - **UMA Address Validation**: Validates Universal Money Addresses.
+- **Seed Encryption**: Encrypts and decrypts seed phrases with AES-256-GCM and scrypt key derivation.
 
 ## ⬇️ Installation
 
@@ -28,7 +29,7 @@ npm install @tetherto/wdk-utils
 
 ## 🚀 Quick Start
 
-### Importing validation functions
+### Importing functions
 
 ```javascript
 import {
@@ -42,8 +43,10 @@ import {
   validateLightningInvoice,
   validateLightningAddress,
   validateSparkAddress,
-  validateUmaAddress
-} from '@tetherto/wdk-utils'
+  validateUmaAddress,
+  encrypt,
+  decrypt
+} from '@tetherto/wdk-utils';
 ```
 
 ### Usage Examples
@@ -78,9 +81,13 @@ console.log(lnAddressResult) // { success: true, type: 'address' }
 const sparkResult = validateSparkAddress('...')
 console.log(sparkResult) // { success: true, type: 'btc' | 'alphanumeric' }
 
-// UMA Address Validation
 const umaResult = validateUmaAddress('$user@domain.com')
 console.log(umaResult) // { success: true, type: 'uma' }
+
+// Seed Encryption
+const payload = encrypt(seedPhrase, passphrase);
+const decrypted = decrypt(payload, passphrase);
+
 ```
 
 ## 📚 API Reference
@@ -160,6 +167,27 @@ console.log(umaResult) // { success: true, type: 'uma' }
 |---|---|---|
 | `resolveUmaUsername(uma)` | UMA string | `{ localPart: string, domain: string, lightningAddress: string }` or `null` |
 | `stripLightningPrefix(input)` | string | Input with `lightning:` prefix removed |
+
+### `encrypt(plaintext: string, password: string, scryptParams?: ScryptParams)`
+Encrypts a string with AES-256-GCM using a scrypt-derived key.
+- **Returns**: `{ version: 1, salt, iv, tag, ciphertext, scryptN, scryptR, scryptP }` (hex-encoded binary fields)
+- **scryptParams**: Optional `{ N, r, p }`; defaults to `{ N: 65536, r: 8, p: 1 }`
+
+### `decrypt(payload: EncryptedPayload, password: string)`
+Decrypts an encrypted payload using a passphrase. Reads `scryptN` / `scryptR` / `scryptP` from the payload when present; otherwise uses defaults.
+- **Returns**: `string`
+- **Throws**: If the password is wrong or the payload was tampered with.
+
+### `deriveKey(password: string, salt: Uint8Array, scryptParams?: ScryptParams)`
+Derives a 32-byte AES key from a passphrase and salt using scrypt.
+- **Returns**: `Uint8Array`
+
+### `DEFAULT_SCRYPT_PARAMS`
+Default scrypt cost parameters: `{ N: 65536, r: 8, p: 1 }`.
+
+### `decryptWithKey(payload: EncryptedPayload, key: Uint8Array)`
+Decrypts an encrypted payload using a pre-derived key.
+- **Returns**: `string`
 
 ## 🛠️ Development
 
