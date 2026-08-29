@@ -84,7 +84,7 @@ function resolveScryptParams (params = {}) {
  */
 function scryptMaxMem (scryptParams) {
   const { N, r, p } = scryptParams
-  return Math.max(SCRYPT_MAX_MEM, 128 * r * (N + p))
+  return Math.max(SCRYPT_MAX_MEM, 128 * r * (N + p + 1))
 }
 
 /**
