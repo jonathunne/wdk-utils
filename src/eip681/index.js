@@ -179,6 +179,10 @@ export function parseEip681Request (input) {
   const method = match[4].toLowerCase()
   const query = match[5] ?? ''
 
+  if (/[\u0080-\uFFFF]/.test(query)) {
+    return { success: false, reason: 'INVALID_FORMAT' }
+  }
+
   if (!SUPPORTED_SCHEMES.includes(scheme)) {
     return { success: false, reason: 'INVALID_FORMAT' }
   }
