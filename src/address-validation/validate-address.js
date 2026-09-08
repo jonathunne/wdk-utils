@@ -17,10 +17,11 @@ import { validateBitcoinAddress } from './bitcoin.js'
 import { validateEVMAddress } from './evm.js'
 import { validateSolanaAddress } from './solana.js'
 import { validateSparkAddress } from './spark.js'
+import { validateTonAddress } from './ton.js'
 import { validateTronAddress } from './tron.js'
 
 /**
- * @typedef {import("./bitcoin.js").BtcAddressValidationResult | import("./evm.js").EvmAddressValidationResult | import("./solana.js").SolanaAddressValidationResult | import("./spark.js").SparkAddressValidationResult | import("./tron.js").TronAddressValidationResult | import("./types.js").AddressValidationFailure} ValidateAddressResult
+ * @typedef {import("./bitcoin.js").BtcAddressValidationResult | import("./evm.js").EvmAddressValidationResult | import("./solana.js").SolanaAddressValidationResult | import("./spark.js").SparkAddressValidationResult | import("./ton.js").TonAddressValidationResult | import("./tron.js").TronAddressValidationResult | import("./types.js").AddressValidationFailure} ValidateAddressResult
  */
 
 /** Address validators by CAIP-2 chain namespace. */
@@ -29,6 +30,7 @@ const VALIDATORS = {
   eip155: validateEVMAddress,
   solana: validateSolanaAddress,
   spark: validateSparkAddress,
+  ton: validateTonAddress,
   tron: validateTronAddress
 }
 

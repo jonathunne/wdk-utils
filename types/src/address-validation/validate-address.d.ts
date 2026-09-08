@@ -17,4 +17,4 @@
  * @returns {ValidateAddressResult} The chain validator's result; INVALID_CHAIN_ID for a malformed chain id, UNSUPPORTED_CHAIN when the chain namespace has no validator.
  */
 export function validateAddress(chainId: string, address: string): ValidateAddressResult;
-export type ValidateAddressResult = import("./bitcoin.js").BtcAddressValidationResult | import("./evm.js").EvmAddressValidationResult | import("./solana.js").SolanaAddressValidationResult | import("./spark.js").SparkAddressValidationResult | import("./tron.js").TronAddressValidationResult | import("./types.js").AddressValidationFailure;
+export type ValidateAddressResult = import("./bitcoin.js").BtcAddressValidationResult | import("./evm.js").EvmAddressValidationResult | import("./solana.js").SolanaAddressValidationResult | import("./spark.js").SparkAddressValidationResult | import("./ton.js").TonAddressValidationResult | import("./tron.js").TronAddressValidationResult | import("./types.js").AddressValidationFailure;

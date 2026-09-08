@@ -17,6 +17,7 @@ For detailed documentation about the complete WDK ecosystem, visit [docs.wallet.
 - **Lightning Network Validation**: Validates Lightning invoices and Lightning addresses.
 - **Solana Address Validation**: Validates base58-encoded 32-byte Solana addresses, including off-curve PDAs.
 - **Spark Address Validation**: Supports Spark address formats.
+- **TON Address Validation**: Validates raw and user-friendly (base64/base64url) TON addresses, including CRC16-CCITT checksums.
 - **UMA Address Validation**: Validates Universal Money Addresses.
 - **Seed Encryption**: Encrypts and decrypts seed phrases with AES-256-GCM and scrypt key derivation.
 - **Key Derivation**: HKDF-SHA256 seed derivation and deterministic ed25519 keypair generation.
@@ -67,6 +68,7 @@ import {
   validateLightningAddress,
   validateSolanaAddress,
   validateSparkAddress,
+  validateTonAddress,
   validateUmaAddress,
   encrypt,
   decrypt,
@@ -117,6 +119,10 @@ console.log(solResult) // { success: true, type: 'solana' }
 const sparkResult = validateSparkAddress('...')
 console.log(sparkResult) // { success: true, type: 'spark' | 'btc', compatibleNetworks: ['mainnet'] }
 
+// TON Address Validation
+const tonResult = validateTonAddress('EQDKbjIcfM6ezt8KjKJJLshZJJSqX7XOA4ff-W72r5gqPrHF')
+console.log(tonResult) // { success: true, type: 'ton' }
+
 const umaResult = validateUmaAddress('$user@domain.com')
 console.log(umaResult) // { success: true, type: 'uma' }
 
@@ -148,6 +154,7 @@ console.log(recovered === mnemonic); // true
 | `validateLightningAddress(address)` | Lightning address string | `{ success: true, type: 'address' }` | `{ success: false, reason: string }` |
 | `validateSolanaAddress(address)` | Solana address string | `{ success: true, type: 'solana' }` | `{ success: false, reason: string }` |
 | `validateSparkAddress(address)` | Spark address string | `{ success: true, type: 'spark' \| 'btc', compatibleNetworks: ('mainnet' \| 'testnet' \| 'regtest' \| 'signet' \| 'local')[] }` — L1 deposit addresses for testnet/signet and regtest/local share their Bitcoin formats and list both networks | `{ success: false, reason: string }` |
+| `validateTonAddress(address)` | TON address string (raw `<workchain>:<hex>` or user-friendly base64/base64url) | `{ success: true, type: 'ton' }` — user-friendly addresses are verified against their CRC16-CCITT checksum | `{ success: false, reason: string }` |
 | `validateUmaAddress(address)` | UMA string (`$user@domain`) | `{ success: true, type: 'uma' }` | `{ success: false, reason: string }` |
 
 ### Payment URI Parsing

@@ -45,6 +45,12 @@ describe('validateAddress', () => {
     expect(result).toEqual({ success: true, type: 'tron' })
   })
 
+  it('dispatches ton chain ids to the Ton validator', () => {
+    const result = validateAddress('ton:mainnet', 'EQDKbjIcfM6ezt8KjKJJLshZJJSqX7XOA4ff-W72r5gqPrHF')
+
+    expect(result).toEqual({ success: true, type: 'ton' })
+  })
+
   it('accepts a bare chain namespace without a reference', () => {
     const result = validateAddress('eip155', '0x742d35Cc6634C0532925a3b844Bc454e4438f44e')
 
@@ -58,7 +64,7 @@ describe('validateAddress', () => {
   })
 
   it('returns UNSUPPORTED_CHAIN for a chain namespace without a validator', () => {
-    const result = validateAddress('ton:mainnet', 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs')
+    const result = validateAddress('cosmos:cosmoshub-4', 'cosmos1qypqxpq9qcrsszg2pvxq6rs0zqg3yyc5lzv7xu')
 
     expect(result).toEqual({ success: false, reason: 'UNSUPPORTED_CHAIN' })
   })
