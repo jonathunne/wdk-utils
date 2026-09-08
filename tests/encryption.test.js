@@ -8,7 +8,7 @@ jest.unstable_mockModule('@noble/ciphers/utils.js', () => ({
   randomBytes: (n) => (queued.length > 0 ? queued.shift() : cipherUtils.randomBytes(n))
 }))
 
-const { encrypt, decrypt } = await import('../src/encryption/index.js')
+const { encrypt, decrypt, deriveKey } = await import('../src/encryption/index.js')
 
 const PHRASE =
   'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
@@ -70,6 +70,11 @@ describe('encryption', () => {
     const payload = encrypt(PHRASE, 'testpassword123', { N: 2 ** 15, r: 8, p: 1 })
     expect(payload.scryptN).toBe(32768)
     expect(decrypt(payload, 'testpassword123')).toBe(PHRASE)
+  })
+
+  it('derives with custom scrypt params above the default memory budget', () => {
+    const key = deriveKey('testpassword123', new Uint8Array(32), { N: 2 ** 17, r: 8, p: 1 })
+    expect(key).toHaveLength(32)
   })
 
   it('throws an actionable error when crypto.getRandomValues is unavailable', () => {
