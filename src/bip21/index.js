@@ -124,6 +124,10 @@ export function parseBip21Request (input) {
   const addressRaw = (queryStart === -1 ? withoutScheme : withoutScheme.slice(0, queryStart)).trim()
   const queryString = queryStart === -1 ? '' : withoutScheme.slice(queryStart + 1)
 
+  if (/[\u0080-\uFFFF]/.test(queryString)) {
+    return { success: false, reason: 'INVALID_FORMAT' }
+  }
+
   if (!addressRaw) {
     return { success: false, reason: 'INVALID_FORMAT' }
   }

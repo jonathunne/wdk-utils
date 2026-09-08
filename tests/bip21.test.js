@@ -173,6 +173,25 @@ describe('bip21', () => {
       })
     })
 
+    it('returns INVALID_FORMAT for unencoded Unicode in the query', () => {
+      expect(
+        parseBip21Request('bitcoin:1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH?label=Caf\u00e9')
+      ).toEqual({ success: false, reason: 'INVALID_FORMAT' })
+    })
+
+    it('accepts percent-encoded Unicode in the query', () => {
+      expect(
+        parseBip21Request('bitcoin:1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH?label=Caf%C3%A9')
+      ).toEqual({
+        success: true,
+        type: 'bip21',
+        value: {
+          address: '1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH',
+          label: 'Caf\u00e9'
+        }
+      })
+    })
+
     it('parses all params together', () => {
       expect(
         parseBip21Request('bitcoin:1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH?amount=0.01&label=Coffee&message=Thanks')

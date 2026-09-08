@@ -67,6 +67,27 @@ describe('eip681', () => {
       })
     })
 
+    it('returns INVALID_FORMAT for unencoded Unicode in the query', () => {
+      expect(
+        parseEip681Request(`${validRequest}&note=Caf\u00e9`)
+      ).toEqual({ success: false, reason: 'INVALID_FORMAT' })
+    })
+
+    it('accepts percent-encoded Unicode in the query', () => {
+      expect(
+        parseEip681Request(`${validRequest}&note=Caf%C3%A9`)
+      ).toEqual({
+        success: true,
+        type: 'eip681-transfer',
+        value: {
+          recipient: '0xA9e338082A061d657014c08e652D96B38639F22a',
+          tokenAddress: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
+          chainId: 137,
+          amountSmallest: '175309'
+        }
+      })
+    })
+
     it('supports scientific notation with plus exponent', () => {
       expect(
         parseEip681Request(
