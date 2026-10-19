@@ -72,9 +72,26 @@ describe('encryption', () => {
     expect(decrypt(payload, 'testpassword123')).toBe(PHRASE)
   })
 
-  it('derives with custom scrypt params above the default memory budget', () => {
+  it('derives with custom scrypt params at the top of the memory budget', () => {
     const key = deriveKey('testpassword123', new Uint8Array(32), { N: 2 ** 17, r: 8, p: 1 })
     expect(key).toHaveLength(32)
+  })
+
+  it('rejects encrypting with scrypt params above the memory budget', () => {
+    expect(() => encrypt(PHRASE, 'testpassword123', { N: 2 ** 18, r: 8, p: 1 }))
+      .toThrow('"maxmem" limit was hit: memUsed(128*r*(N+p+1))=268437504, maxmem=268435456')
+  })
+
+  it('rejects a payload whose scryptN exceeds the memory budget', () => {
+    const payload = { ...encrypt(PHRASE, 'testpassword123'), scryptN: 2 ** 18 }
+    expect(() => decrypt(payload, 'testpassword123'))
+      .toThrow('"maxmem" limit was hit: memUsed(128*r*(N+p+1))=268437504, maxmem=268435456')
+  })
+
+  it('rejects a payload whose scryptR exceeds the memory budget', () => {
+    const payload = { ...encrypt(PHRASE, 'testpassword123'), scryptR: 2 ** 20 }
+    expect(() => decrypt(payload, 'testpassword123'))
+      .toThrow('"maxmem" limit was hit: memUsed(128*r*(N+p+1))=8796361457664, maxmem=268435456')
   })
 
   it('throws an actionable error when crypto.getRandomValues is unavailable', () => {

@@ -40,7 +40,7 @@ const KEY_LEN = 32
 const SALT_LEN = 32
 const IV_LEN = 12
 const GCM_TAG_LEN = 16
-const SCRYPT_MAX_MEM = 128 * 1024 * 1024
+const SCRYPT_MAX_MEM = 256 * 1024 * 1024
 
 /**
  * `randomBytes()` (via @noble/ciphers) reads `crypto.getRandomValues` off
@@ -79,21 +79,13 @@ function resolveScryptParams (params = {}) {
 }
 
 /**
- * @param {Required<ScryptParams>} scryptParams
- * @returns {number}
- */
-function scryptMaxMem (scryptParams) {
-  const { N, r, p } = scryptParams
-  return Math.max(SCRYPT_MAX_MEM, 128 * r * (N + p + 1))
-}
-
-/**
  * Derives a 32-byte encryption key from a password and salt using scrypt.
  *
  * @param {string} password - The passphrase.
  * @param {Uint8Array} salt - The salt bytes.
  * @param {ScryptParams} [scryptParams] - Optional scrypt cost parameters.
  * @returns {Uint8Array} The derived key bytes.
+ * @throws {Error} If the scrypt parameters are invalid or need more than 256 MiB of memory.
  */
 export function deriveKey (password, salt, scryptParams) {
   const resolved = resolveScryptParams(scryptParams)
@@ -102,7 +94,7 @@ export function deriveKey (password, salt, scryptParams) {
     r: resolved.r,
     p: resolved.p,
     dkLen: KEY_LEN,
-    maxmem: scryptMaxMem(resolved)
+    maxmem: SCRYPT_MAX_MEM
   })
 }
 
@@ -113,6 +105,7 @@ export function deriveKey (password, salt, scryptParams) {
  * @param {string} password - The passphrase used to derive the key.
  * @param {ScryptParams} [scryptParams] - Optional scrypt cost parameters.
  * @returns {EncryptedPayload} The encrypted payload including salt, IV, tag, and ciphertext.
+ * @throws {Error} If the scrypt parameters are invalid or need more than 256 MiB of memory.
  */
 export function encrypt (plaintext, password, scryptParams) {
   assertSecureRandomAvailable()
@@ -167,6 +160,9 @@ export function decryptWithKey (payload, key) {
  * @param {EncryptedPayload} payload - The encrypted payload.
  * @param {string} password - The passphrase used to derive the key.
  * @returns {string} The decrypted plaintext.
+ * @throws {Error} If the payload version is not supported.
+ * @throws {Error} If the scrypt parameters are invalid or need more than 256 MiB of memory.
+ * @throws {Error} If the password is wrong or the payload was tampered with.
  */
 export function decrypt (payload, password) {
   if (payload.version !== 1) {
