@@ -23,6 +23,7 @@ export function splitMnemonic(mnemonic: string, options: SplitOptions): Promise<
  *
  * @param {string[]} shares - Hex-encoded shares produced by {@link splitMnemonic}.
  * @returns {Promise<string>} The reconstructed BIP-39 mnemonic.
+ * @throws {Error} If a share has a zero index byte, which would make it dictate the reconstructed secret.
  */
 export function combineMnemonic(shares: string[]): Promise<string>;
 export type SplitOptions = {

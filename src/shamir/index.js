@@ -98,6 +98,9 @@ function validateShares (shares) {
     if (share.length === 0 || share.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(share)) {
       throw new Error(`Share at index ${i} is not a valid hex string`)
     }
+    if (share.endsWith('00')) {
+      throw new Error(`Share at index ${i} has an invalid index byte`)
+    }
     return share.toLowerCase()
   })
 }
@@ -149,6 +152,7 @@ export async function splitMnemonic (mnemonic, options) {
  *
  * @param {string[]} shares - Hex-encoded shares produced by {@link splitMnemonic}.
  * @returns {Promise<string>} The reconstructed BIP-39 mnemonic.
+ * @throws {Error} If a share has a zero index byte, which would make it dictate the reconstructed secret.
  */
 export async function combineMnemonic (shares) {
   const normalized = validateShares(shares)
