@@ -1,4 +1,8 @@
 import { splitMnemonic, combineMnemonic } from '../src/shamir/index.js'
+import { mnemonicToEntropy } from '@scure/bip39'
+import { wordlist } from '@scure/bip39/wordlists/english.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bytesToHex } from '@noble/hashes/utils.js'
 
 // Well-known BIP-39 test vectors (all-`abandon` prefixes with valid checksums).
 // NOT for production use.
@@ -161,6 +165,22 @@ describe('shamir', () => {
       const parts = await splitMnemonic(MNEMONICS[12], { shares: 3, threshold: 2 })
       const upper = parts.map((part) => part.toUpperCase())
       expect(await combineMnemonic(upper)).toBe(MNEMONICS[12])
+    })
+
+    describe('share with a zero index byte', () => {
+      const FORGED_MNEMONIC = 'legal winner thank year wave sausage worth useful legal winner thank yellow'
+      const forgedEntropy = mnemonicToEntropy(FORGED_MNEMONIC, wordlist)
+      const FORGED_SHARE = bytesToHex(sha256(forgedEntropy).subarray(0, 4)) + bytesToHex(forgedEntropy) + '00'
+
+      it('is rejected before combining', async () => {
+        const parts = await splitMnemonic(MNEMONICS[12], { shares: 3, threshold: 2 })
+        await expect(combineMnemonic([FORGED_SHARE, parts[0]])).rejects.toThrow('Share at index 0 has an invalid index byte')
+      })
+
+      it('is rejected at any position, even alongside a full honest threshold', async () => {
+        const parts = await splitMnemonic(MNEMONICS[12], { shares: 3, threshold: 2 })
+        await expect(combineMnemonic([parts[0], parts[1], FORGED_SHARE])).rejects.toThrow('Share at index 2 has an invalid index byte')
+      })
     })
 
     it('rejects duplicate shares', async () => {
