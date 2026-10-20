@@ -73,12 +73,12 @@ describe('encryption', () => {
   })
 
   it.each([
-    ['N=2^18 r=8 p=1 (256 MiB)', { N: 2 ** 18, r: 8, p: 1 }],
-    ['N=2^17 r=16 p=1 (256 MiB)', { N: 2 ** 17, r: 16, p: 1 }],
-    ['N=2^16 r=32 p=4 (largest r and p)', { N: 2 ** 16, r: 32, p: 4 }]
-  ])('derives with %s, the largest supported scrypt params', (_, params) => {
+    ['N=2^18 r=8 p=1 (256 MiB)', { N: 2 ** 18, r: 8, p: 1 }, 'bf0d9afa730ca6e7a031e6c4b39f9555e75e3f315347b93cfeed5d39da818f3c'],
+    ['N=2^17 r=16 p=1 (256 MiB)', { N: 2 ** 17, r: 16, p: 1 }, '6205baca4a350cf716d6d67bbb5e32168a15174df91f493ac4cffef324e3aa05'],
+    ['N=2^16 r=32 p=4 (largest r and p)', { N: 2 ** 16, r: 32, p: 4 }, 'e73797c143d6b9733e33e01ceab6ef733b5af440e8a157b1f9a38deca46b4397']
+  ])('derives with %s, the largest supported scrypt params', (_, params, expectedKey) => {
     const key = deriveKey('testpassword123', new Uint8Array(32), params)
-    expect(key).toHaveLength(32)
+    expect(cipherUtils.bytesToHex(key)).toBe(expectedKey)
   })
 
   it.each([
