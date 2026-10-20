@@ -41,6 +41,8 @@ const SALT_LEN = 32
 const IV_LEN = 12
 const GCM_TAG_LEN = 16
 const SCRYPT_MAX_MEM = 256 * 1024 * 1024
+const SCRYPT_MAX_R = 32
+const SCRYPT_MAX_P = 4
 
 /**
  * `randomBytes()` (via @noble/ciphers) reads `crypto.getRandomValues` off
@@ -79,22 +81,33 @@ function resolveScryptParams (params = {}) {
 }
 
 /**
+ * @param {Required<ScryptParams>} scryptParams
+ * @throws {Error} If r, p or the memory needed by N and r exceed the supported limits.
+ */
+function assertSupportedScryptParams ({ N, r, p }) {
+  if (r > SCRYPT_MAX_R || p > SCRYPT_MAX_P || 128 * r * N > SCRYPT_MAX_MEM) {
+    throw new Error(`Unsupported scrypt parameters: r must not exceed ${SCRYPT_MAX_R}, p must not exceed ${SCRYPT_MAX_P} and 128 * r * N must not exceed ${SCRYPT_MAX_MEM} bytes`)
+  }
+}
+
+/**
  * Derives a 32-byte encryption key from a password and salt using scrypt.
  *
  * @param {string} password - The passphrase.
  * @param {Uint8Array} salt - The salt bytes.
  * @param {ScryptParams} [scryptParams] - Optional scrypt cost parameters.
  * @returns {Uint8Array} The derived key bytes.
- * @throws {Error} If the scrypt parameters are invalid or need more than 256 MiB of memory.
+ * @throws {Error} If the scrypt parameters are invalid, or exceed the supported limits (r <= 32, p <= 4, 128 * r * N <= 256 MiB).
  */
 export function deriveKey (password, salt, scryptParams) {
   const resolved = resolveScryptParams(scryptParams)
+  assertSupportedScryptParams(resolved)
   return scrypt(password, salt, {
     N: resolved.N,
     r: resolved.r,
     p: resolved.p,
     dkLen: KEY_LEN,
-    maxmem: SCRYPT_MAX_MEM
+    maxmem: SCRYPT_MAX_MEM + 128 * resolved.r * (resolved.p + 1)
   })
 }
 
@@ -105,7 +118,7 @@ export function deriveKey (password, salt, scryptParams) {
  * @param {string} password - The passphrase used to derive the key.
  * @param {ScryptParams} [scryptParams] - Optional scrypt cost parameters.
  * @returns {EncryptedPayload} The encrypted payload including salt, IV, tag, and ciphertext.
- * @throws {Error} If the scrypt parameters are invalid or need more than 256 MiB of memory.
+ * @throws {Error} If the scrypt parameters are invalid, or exceed the supported limits (r <= 32, p <= 4, 128 * r * N <= 256 MiB).
  */
 export function encrypt (plaintext, password, scryptParams) {
   assertSecureRandomAvailable()
@@ -161,7 +174,7 @@ export function decryptWithKey (payload, key) {
  * @param {string} password - The passphrase used to derive the key.
  * @returns {string} The decrypted plaintext.
  * @throws {Error} If the payload version is not supported.
- * @throws {Error} If the scrypt parameters are invalid or need more than 256 MiB of memory.
+ * @throws {Error} If the scrypt parameters are invalid, or exceed the supported limits (r <= 32, p <= 4, 128 * r * N <= 256 MiB).
  * @throws {Error} If the password is wrong or the payload was tampered with.
  */
 export function decrypt (payload, password) {

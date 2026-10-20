@@ -72,26 +72,31 @@ describe('encryption', () => {
     expect(decrypt(payload, 'testpassword123')).toBe(PHRASE)
   })
 
-  it('derives with custom scrypt params at the top of the memory budget', () => {
-    const key = deriveKey('testpassword123', new Uint8Array(32), { N: 2 ** 17, r: 8, p: 1 })
+  it.each([
+    ['N=2^18 r=8 p=1 (256 MiB)', { N: 2 ** 18, r: 8, p: 1 }],
+    ['N=2^17 r=16 p=1 (256 MiB)', { N: 2 ** 17, r: 16, p: 1 }],
+    ['N=2^16 r=32 p=4 (largest r and p)', { N: 2 ** 16, r: 32, p: 4 }]
+  ])('derives with %s, the largest supported scrypt params', (_, params) => {
+    const key = deriveKey('testpassword123', new Uint8Array(32), params)
     expect(key).toHaveLength(32)
   })
 
-  it('rejects encrypting with scrypt params above the memory budget', () => {
-    expect(() => encrypt(PHRASE, 'testpassword123', { N: 2 ** 18, r: 8, p: 1 }))
-      .toThrow('"maxmem" limit was hit: memUsed(128*r*(N+p+1))=268437504, maxmem=268435456')
+  it.each([
+    ['N above the memory limit', { N: 2 ** 19, r: 8, p: 1 }],
+    ['r above the limit', { N: 2 ** 16, r: 33, p: 1 }],
+    ['p above the limit', { N: 2 ** 16, r: 8, p: 5 }],
+    ['a small N with a huge p', { N: 1024, r: 8, p: 4000 }]
+  ])('rejects encrypting with %s', (_, params) => {
+    expect(() => encrypt(PHRASE, 'testpassword123', params)).toThrow('Unsupported scrypt parameters: r must not exceed 32, p must not exceed 4 and 128 * r * N must not exceed 268435456 bytes')
   })
 
-  it('rejects a payload whose scryptN exceeds the memory budget', () => {
-    const payload = { ...encrypt(PHRASE, 'testpassword123'), scryptN: 2 ** 18 }
-    expect(() => decrypt(payload, 'testpassword123'))
-      .toThrow('"maxmem" limit was hit: memUsed(128*r*(N+p+1))=268437504, maxmem=268435456')
-  })
-
-  it('rejects a payload whose scryptR exceeds the memory budget', () => {
-    const payload = { ...encrypt(PHRASE, 'testpassword123'), scryptR: 2 ** 20 }
-    expect(() => decrypt(payload, 'testpassword123'))
-      .toThrow('"maxmem" limit was hit: memUsed(128*r*(N+p+1))=8796361457664, maxmem=268435456')
+  it.each([
+    ['scryptN above the memory limit', { scryptN: 2 ** 19 }],
+    ['scryptR above the limit', { scryptR: 2 ** 20 }],
+    ['scryptP above the limit', { scryptP: 4000 }]
+  ])('rejects a payload with %s before deriving the key', (_, override) => {
+    const payload = { ...encrypt(PHRASE, 'testpassword123'), ...override }
+    expect(() => decrypt(payload, 'testpassword123')).toThrow('Unsupported scrypt parameters: r must not exceed 32, p must not exceed 4 and 128 * r * N must not exceed 268435456 bytes')
   })
 
   it('throws an actionable error when crypto.getRandomValues is unavailable', () => {
