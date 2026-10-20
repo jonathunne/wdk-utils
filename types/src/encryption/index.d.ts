@@ -5,6 +5,8 @@
  * @param {Uint8Array} salt - The salt bytes.
  * @param {ScryptParams} [scryptParams] - Optional scrypt cost parameters.
  * @returns {Uint8Array} The derived key bytes.
+ * @throws {Error} If the scrypt parameters are invalid (N not a power of two, or r or p not a positive integer).
+ * @throws {Error} If the scrypt parameters exceed the supported limits (r <= 32, p <= 4, 128 * r * N <= 256 MiB).
  */
 export function deriveKey(password: string, salt: Uint8Array, scryptParams?: ScryptParams): Uint8Array;
 /**
@@ -14,6 +16,8 @@ export function deriveKey(password: string, salt: Uint8Array, scryptParams?: Scr
  * @param {string} password - The passphrase used to derive the key.
  * @param {ScryptParams} [scryptParams] - Optional scrypt cost parameters.
  * @returns {EncryptedPayload} The encrypted payload including salt, IV, tag, and ciphertext.
+ * @throws {Error} If the scrypt parameters are invalid (N not a power of two, or r or p not a positive integer).
+ * @throws {Error} If the scrypt parameters exceed the supported limits (r <= 32, p <= 4, 128 * r * N <= 256 MiB).
  */
 export function encrypt(plaintext: string, password: string, scryptParams?: ScryptParams): EncryptedPayload;
 /**
@@ -30,6 +34,10 @@ export function decryptWithKey(payload: EncryptedPayload, key: Uint8Array): stri
  * @param {EncryptedPayload} payload - The encrypted payload.
  * @param {string} password - The passphrase used to derive the key.
  * @returns {string} The decrypted plaintext.
+ * @throws {Error} If the payload version is not supported.
+ * @throws {Error} If the scrypt parameters are invalid (N not a power of two, or r or p not a positive integer).
+ * @throws {Error} If the scrypt parameters exceed the supported limits (r <= 32, p <= 4, 128 * r * N <= 256 MiB).
+ * @throws {Error} If the password is wrong or the payload was tampered with.
  */
 export function decrypt(payload: EncryptedPayload, password: string): string;
 /** @type {Required<ScryptParams>} */

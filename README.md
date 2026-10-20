@@ -225,16 +225,18 @@ console.log(recovered === mnemonic); // true
 ### `encrypt(plaintext: string, password: string, scryptParams?: ScryptParams)`
 Encrypts a string with AES-256-GCM using a scrypt-derived key.
 - **Returns**: `{ version: 1, salt, iv, tag, ciphertext, scryptN, scryptR, scryptP }` (hex-encoded binary fields)
-- **scryptParams**: Optional `{ N, r, p }`; defaults to `{ N: 65536, r: 8, p: 1 }`
+- **scryptParams**: Optional `{ N, r, p }`; defaults to `{ N: 65536, r: 8, p: 1 }`. Supported ranges: `r` up to 32, `p` up to 4, and `128 * r * N` up to 256 MiB (so for `r: 8`, `N` up to 2^18).
+- **Throws**: If the scrypt parameters are invalid or outside the supported ranges.
 
 ### `decrypt(payload: EncryptedPayload, password: string)`
 Decrypts an encrypted payload using a passphrase. Reads `scryptN` / `scryptR` / `scryptP` from the payload when present; otherwise uses defaults.
 - **Returns**: `string`
-- **Throws**: If the password is wrong or the payload was tampered with.
+- **Throws**: If the payload version is not supported, its scrypt parameters are invalid or outside the supported ranges, or the password is wrong or the payload was tampered with.
 
 ### `deriveKey(password: string, salt: Uint8Array, scryptParams?: ScryptParams)`
 Derives a 32-byte AES key from a passphrase and salt using scrypt.
 - **Returns**: `Uint8Array`
+- **Throws**: If the scrypt parameters are invalid or outside the supported ranges (`r` up to 32, `p` up to 4, `128 * r * N` up to 256 MiB).
 
 ### `DEFAULT_SCRYPT_PARAMS`
 Default scrypt cost parameters: `{ N: 65536, r: 8, p: 1 }`.

@@ -72,9 +72,31 @@ describe('encryption', () => {
     expect(decrypt(payload, 'testpassword123')).toBe(PHRASE)
   })
 
-  it('derives with custom scrypt params above the default memory budget', () => {
-    const key = deriveKey('testpassword123', new Uint8Array(32), { N: 2 ** 17, r: 8, p: 1 })
-    expect(key).toHaveLength(32)
+  it.each([
+    ['N=2^18 r=8 p=1 (256 MiB)', { N: 2 ** 18, r: 8, p: 1 }, 'bf0d9afa730ca6e7a031e6c4b39f9555e75e3f315347b93cfeed5d39da818f3c'],
+    ['N=2^17 r=16 p=1 (256 MiB)', { N: 2 ** 17, r: 16, p: 1 }, '6205baca4a350cf716d6d67bbb5e32168a15174df91f493ac4cffef324e3aa05'],
+    ['N=2^16 r=32 p=4 (largest r and p)', { N: 2 ** 16, r: 32, p: 4 }, 'e73797c143d6b9733e33e01ceab6ef733b5af440e8a157b1f9a38deca46b4397']
+  ])('derives with %s, the largest supported scrypt params', (_, params, expectedKey) => {
+    const key = deriveKey('testpassword123', new Uint8Array(32), params)
+    expect(cipherUtils.bytesToHex(key)).toBe(expectedKey)
+  })
+
+  it.each([
+    ['N above the memory limit', { N: 2 ** 19, r: 8, p: 1 }],
+    ['r above the limit', { N: 2 ** 16, r: 33, p: 1 }],
+    ['p above the limit', { N: 2 ** 16, r: 8, p: 5 }],
+    ['a small N with a huge p', { N: 1024, r: 8, p: 4000 }]
+  ])('rejects encrypting with %s', (_, params) => {
+    expect(() => encrypt(PHRASE, 'testpassword123', params)).toThrow('Unsupported scrypt parameters: r must not exceed 32, p must not exceed 4 and 128 * r * N must not exceed 268435456 bytes')
+  })
+
+  it.each([
+    ['scryptN above the memory limit', { scryptN: 2 ** 19 }],
+    ['scryptR above the limit', { scryptR: 2 ** 20 }],
+    ['scryptP above the limit', { scryptP: 4000 }]
+  ])('rejects a payload with %s before deriving the key', (_, override) => {
+    const payload = { ...encrypt(PHRASE, 'testpassword123'), ...override }
+    expect(() => decrypt(payload, 'testpassword123')).toThrow('Unsupported scrypt parameters: r must not exceed 32, p must not exceed 4 and 128 * r * N must not exceed 268435456 bytes')
   })
 
   it('throws an actionable error when crypto.getRandomValues is unavailable', () => {
